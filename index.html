@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131b">
+  <meta name="description" content="StereoVision Studio 3D: visor local para anaglifos e imágenes y videos SBS.">
+  <title>StereoVision Studio 3D</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script type="module" src="assets/js/main.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="StereoVision Studio 3D inicio"><span class="brand-mark">SV</span><span><strong>StereoVision</strong><small>STUDIO 3D</small></span></a>
+    <div class="top-status"><span class="status-dot"></span> Procesamiento local <span class="divider">·</span> Tus archivos no se suben</div>
+    <button id="vr-button" class="button button-primary" disabled>◉ <span>Modo Viewer / VR</span></button>
+  </header>
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="section-label">MÓDULO DE TRABAJO</div>
+      <div class="module-list" role="tablist" aria-label="Módulos de visualización">
+        <button class="module active" data-module="anaglyph" role="tab" aria-selected="true"><span class="module-icon anaglyph-icon">◐</span><span><b>Anaglifo</b><small>Rojo · Cian</small></span><span class="chevron">›</span></button>
+        <button class="module" data-module="sbs" role="tab" aria-selected="false"><span class="module-icon">▣</span><span><b>Imagen SBS</b><small>Side-by-Side</small></span><span class="chevron">›</span></button>
+        <button class="module" data-module="video" role="tab" aria-selected="false"><span class="module-icon">▷</span><span><b>Video SBS</b><small>Reproducción 3D</small></span><span class="chevron">›</span></button>
+      </div>
+      <div class="section-label import-label">CONTENIDO</div>
+      <div id="drop-zone" class="drop-zone">
+        <div class="upload-icon">↑</div><b>Importa tu archivo</b><p>Arrastra aquí o selecciónalo desde tu dispositivo.</p>
+        <button id="choose-file" class="button button-outline">Seleccionar archivo</button>
+        <input id="file-input" type="file" hidden>
+        <small id="accepted-formats">JPG, PNG o WebP · anaglifo rojo-cian</small>
+      </div>
+      <div id="file-card" class="file-card hidden"><span class="file-icon">▧</span><div class="file-details"><b id="file-name">—</b><small id="file-meta">—</small></div><button id="replace-file" class="icon-button" title="Cambiar archivo" aria-label="Cambiar archivo">↻</button></div>
+      <div class="privacy-note"><span>♧</span><p><b>Privado por diseño</b><br>El contenido permanece en tu dispositivo.</p></div>
+      <div class="sidebar-foot">STEREOVISION STUDIO <span>v1.0</span></div>
+    </aside>
+    <section class="workspace">
+      <div class="workspace-heading"><div><div class="eyebrow">ESPACIO DE TRABAJO</div><h1 id="module-title">Visor de anaglifos</h1><p id="module-description">Visualiza imágenes 3D rojo-cian con lentes anaglifo.</p></div><div class="viewer-badge"><span class="status-dot"></span><span id="state-label">Sin contenido</span></div></div>
+      <section id="viewer" class="viewer" aria-label="Área de visualización">
+        <div class="viewer-toolbar"><span class="live-pill"><i></i> VISTA PREVIA</span><span id="viewer-mode">ANAGLIFO · ROJO-CIAN</span><button id="fullscreen-button" class="icon-button" aria-label="Pantalla completa" title="Pantalla completa">⛶</button></div>
+        <div id="empty-state" class="empty-state"><div class="empty-art"><span>◉</span><span>◉</span></div><h2>Tu espacio 3D te espera</h2><p>Elige un módulo y carga un archivo para comenzar a explorar.</p><span class="empty-hint">Los archivos se procesan localmente</span></div>
+        <div id="visual" class="visual hidden"></div>
+        <div id="orientation-warning" class="orientation-warning hidden">↻ Gira el teléfono a posición horizontal para una experiencia tipo Cardboard.</div>
+        <div id="video-controls" class="video-controls hidden"><button id="play-button" class="play-button" aria-label="Reproducir">▶</button><button id="back-button" class="skip-button" aria-label="Retroceder 10 segundos" title="Retroceder 10 s">−10</button><span id="current-time">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Progreso del video"><span id="duration">0:00</span><button id="forward-button" class="skip-button" aria-label="Adelantar 10 segundos" title="Adelantar 10 s">+10</button><label class="volume-control" title="Volumen">♪ <input id="volume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volumen"></label></div>
+        <div id="vr-exit" class="vr-exit hidden"><button class="button button-primary" id="exit-vr">Salir del visor</button></div>
+      </section>
+      <div class="viewer-caption"><span>ⓘ <span id="caption-text">Carga una imagen anaglifo para comenzar.</span></span><span id="dimensions">—</span></div>
+    </section>
+    <aside class="tools-panel">
+      <div class="tools-heading"><div><div class="eyebrow">AJUSTES DE VISTA</div><h2>Calibración</h2></div><button id="reset-button" class="text-button" disabled>Restablecer</button></div>
+      <div id="controls" class="controls"></div>
+      <div class="tips-card"><div class="tip-icon">✳</div><div><b>Consejo de confort</b><p>Ajusta poco a poco. Si notas fatiga ocular o visión doble, detén la visualización.</p></div></div>
+      <div class="how-card"><b>¿Cómo funciona?</b><p id="how-text">Los anaglifos codifican ambas vistas con canales de color. Usa lentes rojo-cian para separar la imagen de cada ojo.</p></div>
+      <div class="tools-foot">StereoVision Studio 3D <span>Hecho para aprender · 2026</span></div>
+    </aside>
+  </main>
+</body>
+</html>

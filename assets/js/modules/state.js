@@ -1,0 +1,7 @@
+export const modules = {
+  anaglyph: { title: 'Visor de anaglifos', description: 'Visualiza imágenes 3D rojo-cian con lentes anaglifo.', label: 'ANAGLIFO · ROJO-CIAN', formats: 'JPG, PNG o WebP · anaglifo rojo-cian', accept: 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp', how: 'Los anaglifos codifican ambas vistas con canales de color. Usa lentes rojo-cian para separar la imagen de cada ojo.' },
+  sbs: { title: 'Visor de imagen SBS', description: 'Explora las perspectivas izquierda y derecha de una imagen estereoscópica.', label: 'IMAGEN · SIDE-BY-SIDE', formats: 'JPG, PNG o WebP · imagen Side-by-Side', accept: 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp', how: 'La mitad izquierda de la imagen corresponde al ojo izquierdo y la mitad derecha al ojo derecho. Intercambia los ojos si tu material usa el orden inverso.' },
+  video: { title: 'Reproductor de video SBS', description: 'Reproduce y calibra video estereoscópico desde tu dispositivo.', label: 'VIDEO · SIDE-BY-SIDE', formats: 'MP4 · video Side-by-Side', accept: 'video/mp4,.mp4', how: 'Un solo video contiene ambas perspectivas y se reproduce a tiempo compartido. Cada vista muestra una mitad del mismo fotograma.' }
+};
+export const defaults = { zoom: 100, brightness: 100, contrast: 100, offset: 0, vertical: 0, swap: false };
+export const state = { module: 'anaglyph', file: null, url: null, media: null, width: 0, height: 0, settings: { ...defaults }, vr: false, raf: 0 };
