@@ -1,11 +1,11 @@
-import { modules, state } from './modules/state.js';
+import { modules, state, settingsForModule } from './modules/state.js';
 import { validateFile, releaseMedia } from './modules/files.js';
 import { renderControls, resetSettings, applySettings, setControlsEnabled } from './modules/controls.js';
 import { showImage, showVideo, formatTime } from './modules/viewers.js';
 const $ = selector => document.querySelector(selector);
 const notice = message => { $('#caption-text').textContent = message; $('#state-label').textContent = 'Revisa el archivo'; };
 function resetView() {
-  releaseMedia(state); state.settings = { zoom: 100, brightness: 100, contrast: 100, offset: 0, vertical: 0, swap: false };
+  releaseMedia(state); state.settings = settingsForModule(state.module);
   $('#visual').replaceChildren(); $('#visual').classList.add('hidden'); $('#empty-state').classList.remove('hidden'); $('#video-controls').classList.add('hidden');
   $('#file-card').classList.add('hidden'); $('#vr-button').disabled = true; $('#reset-button').disabled = true; $('#dimensions').textContent = '—';
   $('#viewer').classList.remove('vr-active'); $('#visual').classList.remove('is-vr'); $('#vr-exit').classList.add('hidden'); $('#orientation-warning').classList.add('hidden'); document.body.classList.remove('viewer-mode'); state.vr = false;
@@ -30,7 +30,7 @@ function updateAnaglyphSource() {
 async function importFile(file) {
   if (!file) return;
   const error = validateFile(file, state.module); if (error) { notice(error); return; }
-  resetView(); state.settings = { zoom: 100, brightness: 100, contrast: 100, offset: 0, vertical: 0, swap: false }; renderControls(state.module); setControlsEnabled(false);
+  resetView(); state.settings = settingsForModule(state.module); renderControls(state.module); setControlsEnabled(false);
   $('#state-label').textContent = 'Preparando archivo…'; $('#caption-text').textContent = 'Validando y decodificando el contenido local.';
   const url = URL.createObjectURL(file); state.url = url; state.file = file;
   try {
