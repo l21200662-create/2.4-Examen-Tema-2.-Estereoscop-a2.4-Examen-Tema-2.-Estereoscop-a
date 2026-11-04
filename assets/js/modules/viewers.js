@@ -49,12 +49,14 @@ export function showVideo(url) {
       return;
     }
     state.width = video.videoWidth; state.height = video.videoHeight;
-    visual.querySelectorAll('.eye-view canvas').forEach(canvas => { canvas.width = Math.max(1, Math.floor(video.videoWidth / 2)); canvas.height = video.videoHeight; });
+    const sourceEyeWidth = Math.floor(video.videoWidth / 2);
+    const resolutionScale = Math.min(1, 1280 / sourceEyeWidth, 1440 / video.videoHeight);
+    visual.querySelectorAll('.eye-view canvas').forEach(canvas => { canvas.width = Math.max(1, Math.round(sourceEyeWidth * resolutionScale)); canvas.height = Math.max(1, Math.round(video.videoHeight * resolutionScale)); });
     el('#duration').textContent = formatTime(video.duration); ready('video'); drawVideoFrame(video, visual);
   });
   video.addEventListener('error', () => { if (durationRejected || !isCurrent()) return; el('#state-label').textContent = 'Error de reproducción'; el('#caption-text').textContent = 'El navegador no pudo reproducir este MP4. Prueba con otro video compatible.'; });
-  video.addEventListener('play', () => { if (!isCurrent()) return; el('#play-button').textContent = 'Ⅱ'; el('#state-label').textContent = 'Reproduciendo'; syncFrame(); });
-  video.addEventListener('pause', () => { if (!isCurrent()) return; el('#play-button').textContent = '▶'; if (state.file) el('#state-label').textContent = 'Pausado'; cancelAnimationFrame(state.raf); drawVideoFrame(video, visual); });
+  video.addEventListener('play', () => { if (!isCurrent()) return; el('#play-button').textContent = 'Ⅱ'; el('#state-label').textContent = 'Reproduciendo'; syncFrame(video); });
+  video.addEventListener('pause', () => { if (!isCurrent()) return; el('#play-button').textContent = '▶'; if (state.file) el('#state-label').textContent = 'Pausado'; stopFrameLoop(video); drawVideoFrame(video, visual); });
   video.addEventListener('seeked', () => { if (isCurrent()) drawVideoFrame(video, visual); });
   video.addEventListener('timeupdate', () => { if (!isCurrent()) return; el('#current-time').textContent = formatTime(video.currentTime); if (Number.isFinite(video.duration) && video.duration) el('#seek').value = Math.round(video.currentTime / video.duration * 1000); });
   video.load(); el('#video-controls').classList.remove('hidden');
@@ -69,10 +71,19 @@ function drawVideoFrame(video, visual) {
     context.drawImage(video, sx, 0, sw, height, 0, 0, canvas.width, canvas.height);
   });
 }
-function syncFrame() {
-  if (!state.media || state.media.paused) return;
-  drawVideoFrame(state.media, el('#visual'));
-  state.raf = requestAnimationFrame(syncFrame);
+function syncFrame(video = state.media) {
+  if (!video || video !== state.media || video.paused) return;
+  drawVideoFrame(video, el('#visual'));
+  if (typeof video.requestVideoFrameCallback === 'function') {
+    state.frameCallback = video.requestVideoFrameCallback(() => { if (video !== state.media) return; state.frameCallback = null; syncFrame(video); });
+  } else {
+    state.raf = requestAnimationFrame(() => { if (video !== state.media) return; state.raf = 0; syncFrame(video); });
+  }
+}
+function stopFrameLoop(video) {
+  if (state.raf) cancelAnimationFrame(state.raf);
+  if (state.frameCallback !== null) video.cancelVideoFrameCallback?.(state.frameCallback);
+  state.raf = 0; state.frameCallback = null;
 }
 export function formatTime(t) { if (!Number.isFinite(t)) return '0:00'; const m = Math.floor(t / 60), s = Math.floor(t % 60); return `${m}:${String(s).padStart(2,'0')}`; }
 function ready(module, anaglyphMode = 'prepared') {

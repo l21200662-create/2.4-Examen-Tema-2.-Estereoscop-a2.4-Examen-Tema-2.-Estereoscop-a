@@ -11,6 +11,8 @@ export function loadImage(url) {
 }
 export function releaseMedia(state) {
   cancelAnimationFrame(state.raf);
+  if (state.frameCallback !== null) state.media?.cancelVideoFrameCallback?.(state.frameCallback);
+  state.raf = 0; state.frameCallback = null;
   if (state.media) { state.media.pause?.(); state.media.removeAttribute?.('src'); state.media.load?.(); }
   document.querySelectorAll('.eye-view video').forEach(video => { video.pause(); video.removeAttribute('src'); video.load(); });
   if (state.url) URL.revokeObjectURL(state.url);

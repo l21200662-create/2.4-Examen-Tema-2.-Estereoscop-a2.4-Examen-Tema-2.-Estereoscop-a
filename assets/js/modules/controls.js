@@ -23,10 +23,11 @@ export function applySettings() {
   if (pair) {
     const left = pair.querySelector('.eye-view.left'), right = pair.querySelector('.eye-view.right');
     pair.style.transform = `scale(${s.zoom / 100})`;
+    const videoBaseline = state.module === 'video' ? 6 : 0;
     [left, right].forEach((eye, index) => {
       eye.style.transform = '';
       const media = eye?.querySelector('img,video,canvas');
-      media?.style.setProperty('--eye-shift-x', `${(index ? -1 : 1) * s.offset / 2}px`);
+      media?.style.setProperty('--eye-shift-x', `${(index ? -1 : 1) * (s.offset + videoBaseline) / 2}px`);
       media?.style.setProperty('--eye-shift-y', `${s.vertical}px`);
     });
     if (left && right) { left.style.order = s.swap ? '2' : '1'; right.style.order = s.swap ? '1' : '2'; }
