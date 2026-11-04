@@ -8,7 +8,7 @@ Aplicación web educativa para importar desde el dispositivo y visualizar imáge
 
 ## Qué resuelve y alcance
 
-El anaglifo combina las vistas estereoscópicas en canales de color y se observa con lentes rojo-cian. SBS conserva las dos perspectivas lado a lado: la mitad izquierda corresponde al ojo izquierdo y la mitad derecha al derecho (salvo que se intercambien). No se duplica una imagen plana para simular profundidad.
+El anaglifo combina las vistas estereoscópicas en canales de color y se observa con lentes rojo-cian. El módulo puede generarlo desde una imagen SBS: toma el canal rojo de la vista izquierda y los canales verde y azul de la vista derecha. También puede abrir un anaglifo ya preparado. SBS conserva las dos perspectivas lado a lado: la mitad izquierda corresponde al ojo izquierdo y la mitad derecha al derecho (salvo que se intercambien). Una imagen 2D común no contiene dos perspectivas y no puede producir profundidad real por sí sola.
 
 El Studio permite abrir archivos locales, comprobar que el navegador los decodifique, ajustar la representación en pantalla y reproducir video SBS. Los originales no se modifican y los archivos no salen del dispositivo. No incluye cuentas, servidor, almacenamiento, detección automática de pares estereoscópicos, creación de profundidad desde imágenes 2D, transcodificación ni exportación. El modo Viewer divide la pantalla en dos vistas para gafas móviles; no es seguimiento de cabeza ni WebXR.
 
@@ -20,6 +20,7 @@ El Studio permite abrir archivos locales, comprobar que el navegador los decodif
 - `assets/js/modules/state.js`: estados y valores predeterminados.
 - `assets/js/modules/files.js`: validación de tipo, decodificación y liberación de recursos locales.
 - `assets/js/modules/viewers.js`: presentación anaglifo/SBS y controles sincronizados del video.
+- `assets/js/modules/anaglyph.js`: conversión de imágenes SBS a anaglifo rojo-cian mediante mezcla de canales.
 - `assets/js/modules/controls.js`: controles de calibración, actualización de vista y restablecimiento.
 
 El estado de uso recorre: sin archivo → preparación → listo; el video puede pasar a reproduciendo o pausado; las fallas se muestran en el Studio y permiten seleccionar otro archivo. Al cambiar módulo o archivo se pausa y libera el contenido anterior, se revoca su URL temporal y se restauran los ajustes.
@@ -32,7 +33,7 @@ Para GitHub Pages, publica la rama y carpeta que contiene `index.html` (por ejem
 
 ## Material recomendado
 
-Prepara una imagen anaglifo rojo-cian, una imagen SBS con dos perspectivas diferentes y un MP4 SBS H.264/AAC probado en el navegador del teléfono de evaluación. El programa comprueba extensión/tipo y decodificación, pero no puede determinar si el archivo contiene profundidad real. Video 2D duplicado en ambas mitades seguirá siendo plano.
+Prepara una imagen SBS con dos perspectivas diferentes para generar el anaglifo, una imagen SBS para comprobar el visor y un MP4 SBS H.264/AAC probado en el navegador del teléfono de evaluación. También puedes cargar un anaglifo rojo-cian ya procesado. El programa comprueba extensión/tipo y decodificación, pero no puede determinar si el archivo contiene profundidad real. Video 2D duplicado en ambas mitades seguirá siendo plano.
 
 ## Matriz de verificación y evidencias
 

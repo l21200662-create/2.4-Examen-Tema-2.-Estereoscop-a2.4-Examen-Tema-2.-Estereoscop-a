@@ -1,17 +1,21 @@
 import { state } from './state.js';
 import { loadImage } from './files.js';
+import { convertSbsToAnaglyph } from './anaglyph.js';
 const el = s => document.querySelector(s);
 function imagePair(source) {
   const pair = document.createElement('div'); pair.className = 'stereo-pair';
   for (const side of ['left','right']) { const eye = document.createElement('div'); eye.className = `eye-view ${side}`; const img = document.createElement('img'); img.src = source; img.alt = `Perspectiva ${side === 'left' ? 'izquierda' : 'derecha'}`; eye.append(img); pair.append(eye); }
   return pair;
 }
-export async function showImage(url, module) {
+export async function showImage(url, module, { convertSbs = false } = {}) {
   const img = await loadImage(url); state.width = img.naturalWidth; state.height = img.naturalHeight;
   const visual = el('#visual'); visual.replaceChildren();
-  if (module === 'anaglyph') { img.className = 'anaglyph-image'; img.alt = 'Imagen anaglifo rojo-cian'; visual.append(img); }
+  if (module === 'anaglyph' && convertSbs) {
+    const result = convertSbsToAnaglyph(img); result.className = 'anaglyph-image'; result.setAttribute('role','img'); result.setAttribute('aria-label','Imagen SBS convertida a anaglifo rojo-cian');
+    state.width = result.width; visual.append(result);
+  } else if (module === 'anaglyph') { img.className = 'anaglyph-image'; img.alt = 'Imagen anaglifo rojo-cian'; visual.append(img); }
   else visual.append(imagePair(url));
-  ready(module);
+  ready(module, convertSbs);
 }
 export function showVideo(url) {
   const video = document.createElement('video'); video.src = url; video.playsInline = true; video.preload = 'metadata'; video.controls = false; video.setAttribute('playsinline','');
@@ -33,9 +37,9 @@ function syncFrame() {
   state.raf = requestAnimationFrame(syncFrame);
 }
 export function formatTime(t) { if (!Number.isFinite(t)) return '0:00'; const m = Math.floor(t / 60), s = Math.floor(t % 60); return `${m}:${String(s).padStart(2,'0')}`; }
-function ready(module) {
+function ready(module, converted = false) {
   el('#empty-state').classList.add('hidden'); el('#visual').classList.remove('hidden'); el('#vr-button').disabled = module === 'anaglyph'; el('#reset-button').disabled = false;
   el('#state-label').textContent = module === 'video' ? 'Listo para reproducir' : 'Imagen lista';
   el('#dimensions').textContent = `${state.width} × ${state.height} px`;
-  el('#caption-text').textContent = module === 'anaglyph' ? 'Usa lentes rojo-cian para separar los canales.' : 'Perspectivas izquierda y derecha recortadas desde el archivo original.';
+  el('#caption-text').textContent = module === 'anaglyph' ? (converted ? 'Imagen SBS convertida a anaglifo. Usa lentes rojo-cian para verla en 3D.' : 'Usa lentes rojo-cian para separar los canales del anaglifo.') : 'Perspectivas izquierda y derecha recortadas desde el archivo original.';
 }
