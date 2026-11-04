@@ -1,9 +1,11 @@
 const STRIP_HEIGHT = 128;
 
-export function convertSbsToAnaglyph(image) {
-  const width = Math.floor(image.naturalWidth / 2);
+export function convertToAnaglyph(image, { source = '2d', separation = null } = {}) {
+  const stereoPair = source === 'sbs';
+  const width = stereoPair ? Math.floor(image.naturalWidth / 2) : image.naturalWidth;
   const height = image.naturalHeight;
-  if (width < 1 || height < 1) throw new Error('La imagen no tiene ancho suficiente para contener dos vistas SBS.');
+  const channelShift = separation ?? Math.max(3, Math.min(12, Math.round(width * 0.005)));
+  if (width < 1 || height < 1) throw new Error('La imagen no tiene dimensiones válidas para convertirla.');
 
   const output = document.createElement('canvas');
   output.width = width;
@@ -15,13 +17,19 @@ export function convertSbsToAnaglyph(image) {
   leftCanvas.height = rightCanvas.height = Math.min(STRIP_HEIGHT, height);
   const leftContext = leftCanvas.getContext('2d', { willReadFrequently: true });
   const rightContext = rightCanvas.getContext('2d', { willReadFrequently: true });
+  if (!outputContext || !leftContext || !rightContext) throw new Error('El navegador no pudo preparar la conversión. Intenta con una imagen más pequeña.');
 
   for (let y = 0; y < height; y += STRIP_HEIGHT) {
     const stripHeight = Math.min(STRIP_HEIGHT, height - y);
     leftContext.clearRect(0, 0, width, stripHeight);
     rightContext.clearRect(0, 0, width, stripHeight);
-    leftContext.drawImage(image, 0, y, width, stripHeight, 0, 0, width, stripHeight);
-    rightContext.drawImage(image, image.naturalWidth - width, y, width, stripHeight, 0, 0, width, stripHeight);
+    if (stereoPair) {
+      leftContext.drawImage(image, 0, y, width, stripHeight, 0, 0, width, stripHeight);
+      rightContext.drawImage(image, image.naturalWidth - width, y, width, stripHeight, 0, 0, width, stripHeight);
+    } else {
+      leftContext.drawImage(image, 0, y, width, stripHeight, -channelShift, 0, width, stripHeight);
+      rightContext.drawImage(image, 0, y, width, stripHeight, channelShift, 0, width, stripHeight);
+    }
 
     const left = leftContext.getImageData(0, 0, width, stripHeight).data;
     const right = rightContext.getImageData(0, 0, width, stripHeight).data;

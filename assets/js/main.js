@@ -19,10 +19,10 @@ function setModule(key) {
   renderControls(key);
 }
 function updateAnaglyphSource() {
-  const convertSbs = $('#anaglyph-source').value === 'sbs';
-  $('#accepted-formats').textContent = convertSbs ? 'JPG, PNG o WebP · SBS con vista izquierda y derecha' : 'JPG, PNG o WebP · anaglifo rojo-cian ya preparado';
-  $('#module-description').textContent = convertSbs ? 'Carga una imagen SBS y conviértela a anaglifo rojo-cian.' : 'Visualiza un anaglifo rojo-cian ya preparado.';
-  $('#how-text').textContent = convertSbs ? 'La mitad izquierda del SBS aporta el rojo y la derecha el cian. Se necesitan dos perspectivas distintas para conservar la profundidad.' : 'Este modo abre un anaglifo que ya contiene los canales rojo y cian. Usa lentes rojo-cian para verlo en 3D.';
+  const mode = $('#anaglyph-source').value;
+  $('#accepted-formats').textContent = mode === 'sbs' ? 'JPG, PNG o WebP · SBS con vista izquierda y derecha' : mode === 'prepared' ? 'JPG, PNG o WebP · anaglifo rojo-cian ya preparado' : 'JPG, PNG o WebP · cualquier imagen (efecto 2D)';
+  $('#module-description').textContent = mode === 'sbs' ? 'Carga una imagen SBS y conviértela a anaglifo rojo-cian.' : mode === 'prepared' ? 'Visualiza un anaglifo rojo-cian ya preparado.' : 'Carga cualquier imagen para aplicar el efecto rojo-cian.';
+  $('#how-text').textContent = mode === 'sbs' ? 'La mitad izquierda del SBS aporta el rojo y la derecha el cian. Se necesitan dos perspectivas distintas para conservar la profundidad.' : mode === 'prepared' ? 'Este modo abre un anaglifo que ya contiene los canales rojo y cian. Usa lentes rojo-cian para verlo en 3D.' : 'La app separa ligeramente los canales de color para crear el aspecto anaglifo. Una imagen 2D no contiene profundidad real.';
 }
 async function importFile(file) {
   if (!file) return;
@@ -31,7 +31,7 @@ async function importFile(file) {
   $('#state-label').textContent = 'Preparando archivo…'; $('#caption-text').textContent = 'Validando y decodificando el contenido local.';
   const url = URL.createObjectURL(file); state.url = url; state.file = file;
   try {
-    if (state.module === 'video') showVideo(url); else await showImage(url, state.module, { convertSbs: state.module === 'anaglyph' && $('#anaglyph-source').value === 'sbs' });
+    if (state.module === 'video') showVideo(url); else await showImage(url, state.module, { anaglyphMode: state.module === 'anaglyph' ? $('#anaglyph-source').value : 'prepared' });
     $('#file-name').textContent = file.name; $('#file-meta').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB · ${file.type || 'formato detectado'}`; $('#file-card').classList.remove('hidden');
     applySettings();
   } catch (err) { releaseMedia(state); resetView(); notice(err.message || 'No se pudo abrir el archivo. Intenta con otro.'); }
