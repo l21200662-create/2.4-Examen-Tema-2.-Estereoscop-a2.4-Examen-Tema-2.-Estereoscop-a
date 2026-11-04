@@ -12,6 +12,9 @@ export function renderControls(module) {
     applySettings();
   }));
 }
+export function setControlsEnabled(enabled) {
+  document.querySelectorAll('#controls [data-setting]').forEach(control => { control.disabled = !enabled; });
+}
 export function applySettings() {
   const visual = document.querySelector('#visual'), s = state.settings;
   const image = visual.querySelector('.anaglyph-image');
@@ -22,7 +25,7 @@ export function applySettings() {
     pair.style.transform = `scale(${s.zoom / 100})`;
     [left, right].forEach((eye, index) => {
       eye.style.transform = '';
-      const media = eye?.querySelector('img,video');
+      const media = eye?.querySelector('img,video,canvas');
       media?.style.setProperty('--eye-shift-x', `${(index ? -1 : 1) * s.offset / 2}px`);
       media?.style.setProperty('--eye-shift-y', `${s.vertical}px`);
     });

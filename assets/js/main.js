@@ -1,6 +1,6 @@
 import { modules, state } from './modules/state.js';
 import { validateFile, releaseMedia } from './modules/files.js';
-import { renderControls, resetSettings, applySettings } from './modules/controls.js';
+import { renderControls, resetSettings, applySettings, setControlsEnabled } from './modules/controls.js';
 import { showImage, showVideo, formatTime } from './modules/viewers.js';
 const $ = selector => document.querySelector(selector);
 const notice = message => { $('#caption-text').textContent = message; $('#state-label').textContent = 'Revisa el archivo'; };
@@ -8,6 +8,8 @@ function resetView() {
   releaseMedia(state); state.settings = { zoom: 100, brightness: 100, contrast: 100, offset: 0, vertical: 0, swap: false };
   $('#visual').replaceChildren(); $('#visual').classList.add('hidden'); $('#empty-state').classList.remove('hidden'); $('#video-controls').classList.add('hidden');
   $('#file-card').classList.add('hidden'); $('#vr-button').disabled = true; $('#reset-button').disabled = true; $('#dimensions').textContent = '—';
+  $('#viewer').classList.remove('vr-active'); $('#visual').classList.remove('is-vr'); $('#vr-exit').classList.add('hidden'); $('#orientation-warning').classList.add('hidden'); document.body.classList.remove('viewer-mode'); state.vr = false;
+  setControlsEnabled(false);
   $('#state-label').textContent = 'Sin contenido'; $('#caption-text').textContent = 'Carga un archivo compatible para comenzar.'; $('#file-input').value = '';
 }
 function setModule(key) {
@@ -17,6 +19,7 @@ function setModule(key) {
   $('#anaglyph-source-wrap').classList.toggle('hidden', key !== 'anaglyph');
   if (key === 'anaglyph') updateAnaglyphSource();
   renderControls(key);
+  setControlsEnabled(false);
 }
 function updateAnaglyphSource() {
   const mode = $('#anaglyph-source').value;
@@ -27,14 +30,15 @@ function updateAnaglyphSource() {
 async function importFile(file) {
   if (!file) return;
   const error = validateFile(file, state.module); if (error) { notice(error); return; }
-  resetView(); state.settings = { zoom: 100, brightness: 100, contrast: 100, offset: 0, vertical: 0, swap: false }; renderControls(state.module);
+  resetView(); state.settings = { zoom: 100, brightness: 100, contrast: 100, offset: 0, vertical: 0, swap: false }; renderControls(state.module); setControlsEnabled(false);
   $('#state-label').textContent = 'Preparando archivo…'; $('#caption-text').textContent = 'Validando y decodificando el contenido local.';
   const url = URL.createObjectURL(file); state.url = url; state.file = file;
   try {
     if (state.module === 'video') showVideo(url); else await showImage(url, state.module, { anaglyphMode: state.module === 'anaglyph' ? $('#anaglyph-source').value : 'prepared' });
+    if (state.url !== url) return;
     $('#file-name').textContent = file.name; $('#file-meta').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB · ${file.type || 'formato detectado'}`; $('#file-card').classList.remove('hidden');
     applySettings();
-  } catch (err) { releaseMedia(state); resetView(); notice(err.message || 'No se pudo abrir el archivo. Intenta con otro.'); }
+  } catch (err) { if (state.url !== url) return; releaseMedia(state); resetView(); notice(err.message || 'No se pudo abrir el archivo. Intenta con otro.'); }
 }
 document.querySelectorAll('.module').forEach(button => button.addEventListener('click', () => setModule(button.dataset.module)));
 $('#choose-file').addEventListener('click', () => $('#file-input').click()); $('#replace-file').addEventListener('click', () => $('#file-input').click());
@@ -45,7 +49,7 @@ drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
 drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragover'); importFile(e.dataTransfer.files[0]); });
 $('#reset-button').addEventListener('click', resetSettings);
 $('#play-button').addEventListener('click', async () => { if (!state.media) return; if (state.media.paused) { try { await state.media.play(); } catch { notice('El navegador bloqueó la reproducción. Pulsa reproducir de nuevo para autorizarla.'); } } else state.media.pause(); });
-$('#seek').addEventListener('input', e => { if (state.media?.duration) { state.media.currentTime = Number(e.target.value) / 1000 * state.media.duration; document.querySelectorAll('.eye-view video').forEach(v => { v.currentTime = state.media.currentTime; }); } });
+$('#seek').addEventListener('input', e => { if (state.media?.duration) state.media.currentTime = Number(e.target.value) / 1000 * state.media.duration; });
 $('#back-button').addEventListener('click', () => { if (state.media) state.media.currentTime = Math.max(0, state.media.currentTime - 10); });
 $('#forward-button').addEventListener('click', () => { if (state.media) state.media.currentTime = Math.min(state.media.duration || Infinity, state.media.currentTime + 10); });
 $('#volume').addEventListener('input', e => { if (state.media) state.media.volume = Number(e.target.value); });
@@ -54,5 +58,7 @@ $('#vr-button').addEventListener('click', () => { if (!state.file || state.modul
 $('#exit-vr').addEventListener('click', () => { state.vr = false; $('#viewer').classList.remove('vr-active'); $('#visual').classList.remove('is-vr'); $('#vr-exit').classList.add('hidden'); $('#orientation-warning').classList.add('hidden'); document.body.classList.remove('viewer-mode'); });
 window.addEventListener('orientationchange', () => { if (state.vr && screen.orientation?.type?.startsWith('landscape')) $('#orientation-warning').classList.add('hidden'); else if (state.vr) $('#orientation-warning').classList.remove('hidden'); });
 renderControls(state.module);
+setControlsEnabled(false);
+$('#file-input').accept = modules[state.module].accept;
 $('#anaglyph-source').addEventListener('change', updateAnaglyphSource);
 updateAnaglyphSource();
