@@ -5,7 +5,18 @@ import { setControlsEnabled } from './controls.js';
 const el = s => document.querySelector(s);
 function imagePair(source) {
   const pair = document.createElement('div'); pair.className = 'stereo-pair';
-  for (const side of ['left','right']) { const eye = document.createElement('div'); eye.className = `eye-view ${side}`; const img = document.createElement('img'); img.src = source; img.alt = `Perspectiva ${side === 'left' ? 'izquierda' : 'derecha'}`; eye.append(img); pair.append(eye); }
+  const eyeWidth = Math.floor(source.naturalWidth / 2);
+  if (eyeWidth < 1) throw new Error('La imagen SBS debe contener una vista para cada ojo.');
+  for (const [index, side] of ['left','right'].entries()) {
+    const eye = document.createElement('div'); eye.className = `eye-view ${side}`;
+    const canvas = document.createElement('canvas'); canvas.width = eyeWidth; canvas.height = source.naturalHeight;
+    canvas.setAttribute('role','img'); canvas.setAttribute('aria-label',`Perspectiva ${side === 'left' ? 'izquierda' : 'derecha'}`);
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('El navegador no pudo preparar la vista SBS.');
+    const sx = index === 0 ? 0 : eyeWidth, sw = index === 0 ? eyeWidth : source.naturalWidth - eyeWidth;
+    context.drawImage(source, sx, 0, sw, source.naturalHeight, 0, 0, canvas.width, canvas.height);
+    eye.append(canvas); pair.append(eye);
+  }
   return pair;
 }
 export async function showImage(url, module, { anaglyphMode = '2d' } = {}) {
@@ -17,7 +28,7 @@ export async function showImage(url, module, { anaglyphMode = '2d' } = {}) {
     const result = convertToAnaglyph(img, { source: anaglyphMode === 'sbs' ? 'sbs' : '2d' }); result.className = 'anaglyph-image'; result.setAttribute('role','img'); result.setAttribute('aria-label', anaglyphMode === 'sbs' ? 'Imagen SBS convertida a anaglifo rojo-cian' : 'Efecto anaglifo rojo-cian simulado desde imagen 2D');
     state.width = result.width; visual.append(result);
   } else if (module === 'anaglyph') { img.className = 'anaglyph-image'; img.alt = 'Imagen anaglifo rojo-cian'; visual.append(img); }
-  else visual.append(imagePair(url));
+  else { state.width = Math.floor(img.naturalWidth / 2); visual.append(imagePair(img)); }
   ready(module, anaglyphMode);
 }
 export function showVideo(url) {
